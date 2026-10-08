@@ -80,6 +80,8 @@ npm run size       # 打包体积守卫
 - WXML 绑定了方法但 JS 里没定义（例如 `catchtap="noop"` 忘了实现）
 - 同一标签上同时用 `wx:if` 和 `wx:for` → `wx:for` 优先，后面的 `wx:else` 找不到配对
 - `wx:else` 前面没有配对的 `wx:if`
+- 组件注册在 `usingComponents` 里却没用（微信「代码质量」会报"无使用的组件"）
+- 组件路径写错、页面缺文件（js/json/wxml/wxss 四件套）
 - 硬编码 AppSecret / token
 
 ## 数据存储与备份

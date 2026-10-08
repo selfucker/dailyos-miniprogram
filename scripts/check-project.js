@@ -46,17 +46,29 @@ for (const d of pageDirs) {
   }
 }
 
-// ——— 3) 组件 usingComponents 路径是否可解析 ———
+// ——— 3) 组件 usingComponents：路径可解析 + 确实被用到 ———
 for (const f of walk(ROOT).filter(x => x.endsWith('.json'))) {
   let j
   try { j = JSON.parse(fs.readFileSync(f, 'utf8')) } catch (e) { continue }
   const uc = j && j.usingComponents
-  if (!uc) continue
+  if (!uc || !Object.keys(uc).length) continue
+
+  const wxmlPath = f.replace(/\.json$/, '.wxml')
+  const wxmlText = fs.existsSync(wxmlPath) ? fs.readFileSync(wxmlPath, 'utf8') : ''
+
   for (const key of Object.keys(uc)) {
     const target = uc[key]
     const base = target.startsWith('/') ? path.join(ROOT, target) : path.join(path.dirname(f), target)
+
     if (!fs.existsSync(base + '.wxml') || !fs.existsSync(base + '.js')) {
       problems.push(`[组件] ${rel(f)} 里注册的 "${key}": "${target}" 找不到对应组件文件`)
+      continue
+    }
+
+    // 注册了却没用（微信「代码质量」也会报：不应存在无使用的组件）
+    const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    if (!new RegExp('<' + escaped + '[\\s/>]').test(wxmlText)) {
+      problems.push(`[组件] ${rel(f)} 注册了 "${key}"，但 ${path.basename(wxmlPath)} 里没有用到（微信代码质量会报"无使用的组件"）`)
     }
   }
 }
