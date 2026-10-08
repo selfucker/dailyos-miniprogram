@@ -64,8 +64,8 @@ Page({
     totalP: 0,
     totalC: 0,
     totalF: 0,
-    weekCount: 3,
-    weekMinutes: 164,
+    weekCount: 0,
+    weekMinutes: 0,
     weight: 68.5,
     bodyFat: 18.2,
     weightDelta: 0,
@@ -106,9 +106,7 @@ Page({
         intakeKcal: stored.intakeKcal || 0,
         totalP: stored.totalP || 0,
         totalC: stored.totalC || 0,
-        totalF: stored.totalF || 0,
-        weekCount: stored.weekCount || 0,
-        weekMinutes: stored.weekMinutes || 0
+        totalF: stored.totalF || 0
       })
     }
     this.refreshComputed()
@@ -124,10 +122,17 @@ Page({
 
   refreshComputed() {
     const totals = sumMacros(this.data.meals)
-    const trend = [68.8, 69.1, 68.9, 68.5, 68.7, 68.3, this.data.weight]
+    const stats = store.getFitnessStats(new Date(), 7)
+
+    // 体重趋势用历史里真实记录过的体重；一次都没记过就退化成只有当前体重
+    const points = stats.trend.filter(t => t.weight > 0)
+    const trend = points.length > 1 ? points.map(t => t.weight) : [this.data.weight]
+    const trendLabels = points.length > 1 ? points.map(t => t.label) : buildTrendLabels(1)
+
     const high = Math.max(...trend)
     const low = Math.min(...trend)
     const avg = trend.reduce((a, b) => a + b, 0) / trend.length
+
     this.setData({
       dateLabel: dateWithSuffix(new Date()),
       burnText: burnFor(this.data.intensity, this.data.durationMin) + ' kcal',
@@ -135,7 +140,9 @@ Page({
       totalP: totals.p,
       totalC: totals.c,
       totalF: totals.f,
-      trendLabels: buildTrendLabels(7),
+      weekCount: stats.weekCount,
+      weekMinutes: stats.weekMinutes,
+      trendLabels,
       trend,
       trendHigh: high.toFixed(1),
       trendLow: low.toFixed(1),
@@ -369,7 +376,10 @@ Page({
     }
     if (!store.setFitnessToday(payload)) {
       wx.showToast({ title: '保存失败', icon: 'none' })
+      return
     }
+    // 同时写入历史（供"本周次数/体重趋势/我的页统计"使用）
+    store.appendFitnessDay(payload)
   },
 
   // —— 折线图绘制 ——

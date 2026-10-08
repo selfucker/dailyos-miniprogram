@@ -14,6 +14,7 @@ const KEYS = {
   englishWrong: 'english.wrong.v1',
   accountRecords: 'account.records.v1',
   fitnessToday: 'fitness.today.v1',
+  fitnessHistory: 'fitness.history.v1',
   profile: 'user.profile.v1'
 }
 
@@ -159,6 +160,62 @@ function getLedgerSummary(now, recentLimit) {
   }
 }
 
+// 某个月有多少天
+function daysInMonthOf(month) {
+  const parts = String(month || '').split('-')
+  const y = Number(parts[0])
+  const m = Number(parts[1])
+  if (!y || !m) return 30
+  return new Date(y, m, 0).getDate()
+}
+
+// 月度统计（记账月视图用）：收支合计、分类占比、按日汇总
+function getMonthStats(month, now) {
+  const m = month || monthKey(now)
+  const records = getRecords().filter(it => it && String(it.date || '').slice(0, 7) === m)
+
+  let expense = 0
+  let income = 0
+  const catMap = {}
+  const dayMap = {}
+
+  records.forEach(it => {
+    const cents = it.cents || 0
+    if (it.type === '收入') {
+      income += cents
+      return
+    }
+    expense += cents
+    const cat = it.category || '其他'
+    catMap[cat] = (catMap[cat] || 0) + cents
+    const day = Number(String(it.date || '').slice(8, 10)) || 0
+    if (day) dayMap[day] = (dayMap[day] || 0) + cents
+  })
+
+  const byCategory = Object.keys(catMap)
+    .map(k => ({
+      category: k,
+      cents: catMap[k],
+      ratio: expense ? Math.round(catMap[k] / expense * 100) : 0
+    }))
+    .sort((a, b) => b.cents - a.cents)
+
+  const total = daysInMonthOf(m)
+  const byDay = []
+  for (let d = 1; d <= total; d++) byDay.push({ day: d, cents: dayMap[d] || 0 })
+
+  return {
+    month: m,
+    expenseCents: expense,
+    incomeCents: income,
+    netCents: income - expense,
+    count: records.length,
+    byCategory,
+    byDay,
+    maxDayCents: byDay.reduce((mx, d) => (d.cents > mx ? d.cents : mx), 0)
+  }
+}
+
 // ============ 健身 ============
 function getFitnessToday(now) {
   const stored = read(KEYS.fitnessToday, null)
@@ -168,6 +225,100 @@ function getFitnessToday(now) {
 
 function setFitnessToday(payload) {
   return write(KEYS.fitnessToday, payload)
+}
+
+const FITNESS_HISTORY_LIMIT = 400   // 约一年多的每日记录
+
+function getFitnessHistory() {
+  const list = read(KEYS.fitnessHistory, [])
+  return Array.isArray(list) ? list : []
+}
+
+// 写入/更新某一天的健身记录（按 date upsert，只保留最近 LIMIT 天）
+function appendFitnessDay(payload) {
+  if (!payload || !payload.date) return getFitnessHistory()
+
+  const day = {
+    date: payload.date,
+    durationMin: payload.durationMin || 0,
+    parts: Array.isArray(payload.parts) ? payload.parts : [],
+    intensity: payload.intensity || '',
+    weight: payload.weight || 0,
+    bodyFat: payload.bodyFat || 0,
+    intakeKcal: payload.intakeKcal || 0,
+    totalP: payload.totalP || 0,
+    totalC: payload.totalC || 0,
+    totalF: payload.totalF || 0,
+    ts: payload.ts || Date.now()
+  }
+
+  const list = getFitnessHistory().filter(d => d && d.date !== day.date)
+  list.push(day)
+  list.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
+  write(KEYS.fitnessHistory, list.slice(-FITNESS_HISTORY_LIMIT))
+  return getFitnessHistory()
+}
+
+// 健身统计：累计天数 / 本周次数与时长 / 连续天数 / 最近体重与变化 / 最近 N 天体重趋势
+function getFitnessStats(now, trendDays) {
+  const dt = now ? new Date(now) : new Date()
+  const list = getFitnessHistory()
+  const byDate = {}
+  list.forEach(d => { if (d && d.date) byDate[d.date] = d })
+
+  // 本周（周一为起点）
+  const monday = new Date(dt)
+  monday.setDate(dt.getDate() - ((dt.getDay() + 6) % 7))
+  let weekCount = 0
+  let weekMinutes = 0
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday)
+    d.setDate(monday.getDate() + i)
+    const rec = byDate[dateKey(d)]
+    if (rec) {
+      weekCount++
+      weekMinutes += rec.durationMin || 0
+    }
+  }
+
+  // 连续记录天数（今天没记就从昨天往前算，避免早上打开就显示断了）
+  let streak = 0
+  const cursor = new Date(dt)
+  if (!byDate[dateKey(cursor)]) cursor.setDate(cursor.getDate() - 1)
+  while (byDate[dateKey(cursor)]) {
+    streak++
+    cursor.setDate(cursor.getDate() - 1)
+  }
+
+  // 最近 N 天体重趋势（缺记录的天 weight = 0，由调用方决定怎么画）
+  const n = trendDays || 7
+  const trend = []
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date(dt)
+    d.setDate(dt.getDate() - i)
+    const rec = byDate[dateKey(d)]
+    trend.push({
+      date: dateKey(d),
+      label: `${d.getMonth() + 1}/${d.getDate()}`,
+      weight: (rec && rec.weight) || 0
+    })
+  }
+
+  const points = trend.filter(t => t.weight > 0)
+  const latest = points.length ? points[points.length - 1].weight : 0
+  const prev = points.length > 1 ? points[points.length - 2].weight : 0
+
+  return {
+    totalDays: list.length,
+    weekCount,
+    weekMinutes,
+    streak,
+    monthCount: list.filter(d => String(d.date || '').slice(0, 7) === monthKey(dt)).length,
+    latestWeight: latest,
+    prevWeight: prev,
+    weightDelta: latest && prev ? Number((latest - prev).toFixed(1)) : 0,
+    trend
+  }
 }
 
 // 某个月的打卡日历网格（7 列，含月初空白格），供英语首页展示
@@ -332,7 +483,8 @@ module.exports = {
   getWrongWords, setWrongWords, addWrongWord, markWrongWordRight, removeWrongWord,
   pickReviewWords, buildDailyQueue, getWrongSummary,
   WRONG_LIMIT, GRADUATE_STREAK,
-  getRecords, setRecords, getLedgerSummary,
+  getRecords, setRecords, getLedgerSummary, getMonthStats, daysInMonthOf,
   getFitnessToday, setFitnessToday,
+  getFitnessHistory, appendFitnessDay, getFitnessStats, FITNESS_HISTORY_LIMIT,
   getProfile, setProfile, DEFAULT_PROFILE
 }

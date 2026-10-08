@@ -149,6 +149,10 @@ Page({
   // WXML 里 .sheet 用 catchtap="noop" 阻止点击穿透到遮罩，必须有这个方法
   noop() {},
 
+  onTapMonth() {
+    wx.navigateTo({ url: '/pages/account/month/index' })
+  },
+
   onCloseSheet() {
     this.setData({ editing: false })
   },

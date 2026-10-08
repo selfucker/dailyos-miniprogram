@@ -46,6 +46,16 @@
     <view class="muted mt">本月支出 {{ monthTotal }}</view>
   </view>
 
+  <view class="month-entry"
+        bindtap="onTapMonth"
+        hover-class="month-entry-hover"
+        hover-start-time="0"
+        hover-stay-time="150">
+    <text class="month-entry-label">月度统计</text>
+    <text class="month-entry-value">分类占比 · 每日支出</text>
+    <text class="month-entry-arrow">›</text>
+  </view>
+
   <!-- sheet 弹层 -->
   <view wx:if="{{ editing }}" class="sheet-mask" bindtap="onCloseSheet">
     <view class="sheet" catchtap="noop">

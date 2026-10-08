@@ -2,6 +2,7 @@
 // 统计全部来自本地真实数据；这里还提供数据导出/导入（换手机不丢数据）
 const store = require('../../utils/store.js')
 const backup = require('../../utils/backup.js')
+const notify = require('../../utils/notify.js')
 const { yuan } = require('../../utils/format.js')
 
 const APP_VERSION = 'v0.1.0'
@@ -13,7 +14,7 @@ Page({
     streak: 0,
     totalDays: 0,
     englishDays: 0,
-    monthCount: 0,
+    workoutDays: 0,
     monthTotal: '¥0.00',
     settingItems: []
   },
@@ -27,11 +28,12 @@ Page({
     const english = store.getEnglishSummary(now)
     const ledger = store.getLedgerSummary(now)
     const profile = store.getProfile()
-    const month = store.monthKey(now)
+    const fitness = store.getFitnessStats(now)
 
-    const monthCount = store.getRecords()
-      .filter(it => it && String(it.date || '').slice(0, 7) === month)
-      .length
+    const ns = notify.getSettings()
+    const reminderText = ns.enabled
+      ? `${ns.morningTime} / ${ns.eveningTime} · 剩 ${ns.quota} 次`
+      : '未开启'
 
     this.setData({
       nickname: profile.nickname,
@@ -39,14 +41,14 @@ Page({
       streak: english.streak,
       totalDays: english.totalDays,
       englishDays: english.totalDays,
-      monthCount,
+      workoutDays: fitness.totalDays,
       monthTotal: yuan(ledger.monthCents),
       settingItems: [
         { key: 'wordbook', label: '当前词书', value: english.bookTitle || '未选择' },
         { key: 'target',   label: '今日词量', value: (english.target || 0) + ' 词' },
         { key: 'export',   label: '数据导出', value: '备份为 JSON' },
         { key: 'import',   label: '数据导入', value: '从 JSON 恢复' },
-        { key: 'remind',   label: '提醒时间', value: '未开启' },
+        { key: 'remind',   label: '打卡提醒', value: reminderText },
         { key: 'about',    label: '关于 DailyOS', value: APP_VERSION }
       ]
     })
@@ -64,13 +66,64 @@ Page({
     const key = e.currentTarget.dataset.key
     if (key === 'export') return this.onExport()
     if (key === 'import') return this.onImport()
+    if (key === 'remind') return this.onTapRemind()
     const tips = {
       wordbook: '去「英语」页点词书卡片切换',
       target: '每日词量跟随词书，后续支持自定义',
-      remind: '订阅消息提醒尚未实现',
       about: 'DailyOS ' + APP_VERSION
     }
     wx.showToast({ title: tips[key] || '后续实现', icon: 'none' })
+  },
+
+  // ============ 打卡提醒（订阅消息） ============
+  onTapRemind() {
+    const s = notify.getSettings()
+    const items = s.enabled
+      ? [`关闭提醒（当前 ${s.morningTime} / ${s.eveningTime}）`, `再授权一次（当前剩 ${s.quota} 次可发）`]
+      : ['开启打卡提醒（需要微信授权）']
+
+    wx.showActionSheet({
+      itemList: items,
+      success: (res) => {
+        if (!s.enabled && res.tapIndex === 0) return this.enableRemind()
+        if (s.enabled && res.tapIndex === 0) return this.disableRemind()
+        if (s.enabled && res.tapIndex === 1) return this.enableRemind()
+      }
+    })
+  },
+
+  enableRemind() {
+    if (!notify.isTemplateConfigured()) {
+      wx.showModal({
+        title: '还没配置消息模板',
+        content: '需要先到微信公众平台 → 功能 → 订阅消息 → 选用模板，把模板 ID 填到 utils/config.js 的 notifyTmplIds 里。\n\n授权与额度记录的逻辑已经写好，配好模板即可生效。',
+        showCancel: false
+      })
+      return
+    }
+
+    notify.requestSubscribe().then(res => {
+      if (!res.ok) {
+        wx.showToast({ title: res.error || '授权失败', icon: 'none' })
+        return
+      }
+      this.refresh()
+      if (res.accepted > 0) {
+        wx.showModal({
+          title: '提醒已开启',
+          content: `本次授权 ${res.accepted} 次（累计可发 ${res.quota} 条）。\n\n注意：微信的「一次性订阅」需要服务端调用接口才会真正发送，后端就绪后即可收到提醒。`,
+          showCancel: false
+        })
+      } else {
+        wx.showToast({ title: '你拒绝了授权', icon: 'none' })
+      }
+    })
+  },
+
+  disableRemind() {
+    notify.setSettings({ enabled: false })
+    this.refresh()
+    wx.showToast({ title: '已关闭提醒', icon: 'success' })
   },
 
   // ============ 导出 ============

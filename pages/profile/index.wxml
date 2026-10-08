@@ -13,8 +13,8 @@
       <view class="stat-label">英语天数</view>
     </view>
     <view class="stat">
-      <view class="stat-num title-serif">{{ monthCount }}</view>
-      <view class="stat-label">本月笔数</view>
+      <view class="stat-num title-serif">{{ workoutDays }}</view>
+      <view class="stat-label">健身天数</view>
     </view>
     <view class="stat">
       <view class="stat-num title-serif">{{ monthTotal }}</view>

@@ -157,6 +157,21 @@
 .key-fn { color: var(--color-brand); font-size: 40rpx; }
 .key-hover { background-color: var(--color-brand-soft); }
 
+/* —— 月度统计入口 —— */
+.month-entry {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 28rpx;
+  margin-top: 24rpx;
+  background-color: var(--color-surface);
+  border: 1rpx solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+.month-entry-hover { background-color: var(--color-brand-soft); }
+.month-entry-label { flex: 1; font-size: 28rpx; color: var(--color-ink); }
+.month-entry-value { font-size: 22rpx; color: var(--color-muted); }
+.month-entry-arrow { margin-left: 12rpx; font-size: 32rpx; color: var(--color-muted); }
+
 /* —— sheet 表单行 —— */
 .form-row {
   display: flex;

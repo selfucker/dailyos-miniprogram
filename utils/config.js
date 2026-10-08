@@ -8,7 +8,15 @@ const ENV = {
   prod: { baseUrl: 'https://api.dailyos.example.com/api/v1' }
 }
 
+// 订阅消息模板 ID
+// 获取方式：微信公众平台 → 功能 → 订阅消息 → 选用模板 → 复制模板 ID
+// 注意：小程序只能用「一次性订阅」，用户每授权一次，服务端才能发 1 条
+const notifyTmplIds = {
+  dailyCheckin: ''      // 例：'aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789ab'（留空则提醒功能会提示去配置）
+}
+
 module.exports = {
   baseUrl: ENV.dev.baseUrl,
-  env: 'dev'
+  env: 'dev',
+  notifyTmplIds
 }

@@ -26,6 +26,15 @@ jobs:
       - name: 错词本回归测试
         run: node scripts/test-wrong.js
 
+      - name: 提醒模块回归测试
+        run: node scripts/test-notify.js
+
+      - name: 月度统计回归测试
+        run: node scripts/test-month.js
+
+      - name: 健身历史回归测试
+        run: node scripts/test-fitness.js
+
       - name: 项目静态检查（页面注册 / 事件方法 / wx:if 混用 / 敏感信息）
         run: node scripts/check-project.js
 

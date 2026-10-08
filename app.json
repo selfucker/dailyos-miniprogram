@@ -6,6 +6,7 @@
     "pages/english/wrong/index",
     "pages/fitness/index",
     "pages/account/index",
+    "pages/account/month/index",
     "pages/profile/index",
     "pages/news/article/index"
   ],

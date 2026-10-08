@@ -1,0 +1,59 @@
+<view class="page">
+  <view class="month-bar">
+    <view class="nav" bindtap="onPrev" hover-class="nav-hover" hover-start-time="0">‹ 上月</view>
+    <text class="month-title title-serif">{{ monthText }}</text>
+    <view class="nav {{ canNext ? '' : 'nav-off' }}" bindtap="onNext" hover-class="nav-hover" hover-start-time="0">下月 ›</view>
+  </view>
+
+  <view class="summary">
+    <view class="sum-item">
+      <text class="sum-num title-serif">{{ stats.expenseText }}</text>
+      <text class="sum-label">支出</text>
+    </view>
+    <view class="sum-item">
+      <text class="sum-num title-serif">{{ stats.incomeText }}</text>
+      <text class="sum-label">收入</text>
+    </view>
+    <view class="sum-item">
+      <text class="sum-num title-serif {{ stats.netCents < 0 ? 'neg' : '' }}">{{ stats.netText }}</text>
+      <text class="sum-label">结余</text>
+    </view>
+    <view class="sum-item">
+      <text class="sum-num title-serif">{{ stats.count }}</text>
+      <text class="sum-label">笔数</text>
+    </view>
+  </view>
+
+  <block wx:if="{{ stats.count > 0 }}">
+    <view class="block">
+      <view class="block-title">支出分类</view>
+      <view class="cat-row" wx:for="{{ stats.byCategory }}" wx:key="category">
+        <view class="cat-head">
+          <text class="cat-name">{{ item.category }}</text>
+          <text class="cat-amt">{{ item.amountText }} · {{ item.ratio }}%</text>
+        </view>
+        <view class="cat-track">
+          <view class="cat-fill" style="width: {{ item.ratio }}%;"></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="block">
+      <view class="block-title">每日支出</view>
+      <view class="days">
+        <view class="day" wx:for="{{ bars }}" wx:key="day">
+          <view class="day-bar-wrap">
+            <view class="day-bar" style="height: {{ item.height }}%;"></view>
+          </view>
+          <text class="day-num">{{ item.day }}</text>
+        </view>
+      </view>
+      <view class="days-tip">柱子越高表示当天支出越多</view>
+    </view>
+  </block>
+
+  <view class="empty" wx:else>
+    <view class="empty-title">这个月还没有记账</view>
+    <view class="empty-sub">去「记账」页点上方金额记第一笔</view>
+  </view>
+</view>
