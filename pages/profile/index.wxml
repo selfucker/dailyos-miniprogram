@@ -31,4 +31,6 @@
       </view>
     </block>
   </view>
+
+  <view class="tip">备份是一个 JSON 文件，可发送到微信聊天长期保存；换手机后在新设备用「数据导入」恢复。</view>
 </view>

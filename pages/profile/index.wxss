@@ -59,3 +59,10 @@
 .setting-row:last-child { border-bottom: none; }
 .set-label { font-size: 28rpx; color: var(--color-ink); }
 .set-value { font-size: 26rpx; color: var(--color-muted); }
+
+.tip {
+  margin: 20rpx 8rpx 0;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: var(--color-muted);
+}
