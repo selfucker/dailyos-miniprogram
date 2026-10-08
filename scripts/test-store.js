@@ -69,6 +69,19 @@ eq('默认昵称', store.getProfile().nickname, 'Jesse')
 store.setProfile({ nickname: '小明' })
 eq('设置后昵称', store.getProfile().nickname, '小明')
 
+console.log('— 打卡日历 —')
+const calNow = new Date(2026, 9, 8)   // 2026-10-08
+store.write(store.KEYS.englishHistory, ['2026-10-01', '2026-10-08', '2026-09-30'])
+const cal = store.getMonthCalendar(calNow)
+eq('日历标题', cal.title, '2026年10月')
+eq('月初空白格 = 1 号是周几', cal.cells.filter(c => c.day === 0).length, new Date(2026, 9, 1).getDay())
+eq('日期格数 = 当月天数', cal.cells.filter(c => c.day > 0).length, 31)
+eq('本月打卡天数（9/30 不计入）', cal.monthDays, 2)
+eq('1 号已打卡', cal.cells.find(c => c.day === 1).checked, true)
+eq('8 号是今天', cal.cells.find(c => c.day === 8).today, true)
+eq('3 号未打卡且非今天', cal.cells.find(c => c.day === 3).checked, false)
+eq('空白格不参与打卡统计', cal.cells.filter(c => c.day === 0).every(c => c.checked === false), true)
+
 console.log('— 边界：空数据 —')
 for (const k of Object.keys(mem)) delete mem[k]
 const en2 = store.getEnglishSummary(now)

@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 三个测试脚本都是零依赖的纯 Node 脚本，不需要 npm install
+      - name: 数据层回归测试
+        run: node scripts/test-store.js
+
+      - name: 备份功能回归测试
+        run: node scripts/test-backup.js
+
+      - name: 错词本回归测试
+        run: node scripts/test-wrong.js
+
+      - name: 项目静态检查（页面注册 / 事件方法 / wx:if 混用 / 敏感信息）
+        run: node scripts/check-project.js
+
+      - name: 打包体积守卫
+        run: node scripts/check-size.js

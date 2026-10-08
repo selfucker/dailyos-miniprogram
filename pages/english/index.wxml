@@ -37,6 +37,23 @@
     <text wx:else>今日已学习 {{ done }} 词，点上方按钮继续。</text>
   </view>
 
+  <view class="cal-card">
+    <view class="cal-head">
+      <text class="cal-title">{{ calTitle }}打卡</text>
+      <text class="cal-stat">本月 {{ calMonthDays }} 天 · 连续 {{ streak }} 天 · 累计 {{ totalDays }} 天</text>
+    </view>
+    <view class="cal-week">
+      <text>日</text><text>一</text><text>二</text><text>三</text><text>四</text><text>五</text><text>六</text>
+    </view>
+    <view class="cal-grid">
+      <view class="cal-cell {{ item.checked ? 'on' : '' }} {{ item.today ? 'today' : '' }}"
+            wx:for="{{ calCells }}"
+            wx:key="key">
+        <view class="cal-dot" wx:if="{{ item.day > 0 }}">{{ item.day }}</view>
+      </view>
+    </view>
+  </view>
+
   <view class="wrong-entry"
         bindtap="onTapWrong"
         hover-class="wrong-entry-hover"

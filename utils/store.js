@@ -170,6 +170,34 @@ function setFitnessToday(payload) {
   return write(KEYS.fitnessToday, payload)
 }
 
+// 某个月的打卡日历网格（7 列，含月初空白格），供英语首页展示
+function getMonthCalendar(now, history) {
+  const list = Array.isArray(history) ? history : getEnglishHistory()
+  const dt = now ? new Date(now) : new Date()
+  const year = dt.getFullYear()
+  const month = dt.getMonth()
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const offset = new Date(year, month, 1).getDay()   // 0 = 周日
+
+  const checked = {}
+  list.forEach(d => { if (d) checked[d] = true })
+
+  const cells = []
+  for (let i = 0; i < offset; i++) {
+    cells.push({ key: 'pad' + i, day: 0, checked: false, today: false })
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const key = `${year}-${pad(month + 1)}-${pad(d)}`
+    cells.push({ key, day: d, checked: !!checked[key], today: d === dt.getDate() })
+  }
+
+  return {
+    title: `${year}年${month + 1}月`,
+    cells,
+    monthDays: cells.filter(c => c.checked).length
+  }
+}
+
 // ============ 英语错词本 ============
 // 一条错词记录：{ word, phonetic, meaning, example, wrongCount, rightStreak, addedAt, lastSeenAt }
 const WRONG_LIMIT = 200      // 上限：超了丢最早加入的，避免无限增长
@@ -300,7 +328,7 @@ module.exports = {
   read, write,
   getEnglishBookId, setEnglishBookId,
   getEnglishToday, setEnglishToday,
-  getEnglishHistory, addEnglishHistoryDay, getEnglishSummary,
+  getEnglishHistory, addEnglishHistoryDay, getEnglishSummary, getMonthCalendar,
   getWrongWords, setWrongWords, addWrongWord, markWrongWordRight, removeWrongWord,
   pickReviewWords, buildDailyQueue, getWrongSummary,
   WRONG_LIMIT, GRADUATE_STREAK,

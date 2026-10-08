@@ -16,6 +16,10 @@ Page({
     progress: 0,
     ctaText: '开始今日打卡',
     wrongCount: 0,
+    totalDays: 0,
+    calTitle: '',
+    calCells: [],
+    calMonthDays: 0,
     remote: false
   },
 
@@ -40,11 +44,13 @@ Page({
   // 今日进度 / 连续天数 / 第几天，全部由数据层计算（和首页共用同一套逻辑，避免两处数字不一致）
   refresh() {
     const books = this.data.books && this.data.books.length ? this.data.books : listBooks()
-    const s = store.getEnglishSummary(new Date())
+    const now = new Date()
+    const s = store.getEnglishSummary(now)
+    const cal = store.getMonthCalendar(now)
     const ctaText = s.finished ? '再来一组' : (s.done > 0 ? '继续打卡' : '开始今日打卡')
 
     this.setData({
-      dateLabel: dateWithSuffix(new Date()),
+      dateLabel: dateWithSuffix(now),
       books,
       bookId: s.bookId,
       bookTitle: s.bookTitle,
@@ -54,7 +60,11 @@ Page({
       target: s.target,
       progress: s.progress,
       ctaText,
-      wrongCount: store.getWrongSummary().count
+      wrongCount: store.getWrongSummary().count,
+      totalDays: s.totalDays,
+      calTitle: cal.title,
+      calCells: cal.cells,
+      calMonthDays: cal.monthDays
     })
   },
 
