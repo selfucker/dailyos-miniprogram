@@ -1,0 +1,3 @@
+<view class="card {{ brand ? 'card-brand' : '' }} {{ padding ? 'card-pad' : '' }}">
+  <slot/>
+</view>

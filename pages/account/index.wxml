@@ -1,0 +1,115 @@
+<view class="page">
+  <view class="amount row-tap" bindtap="onTapAmount"
+        hover-class="row-hover" hover-start-time="0" hover-stay-time="150">
+    <text class="sym">¥</text>
+    <text class="num title-serif">{{ todayExpenseYuan }}</text>
+  </view>
+  <view class="muted center">今日支出 · 点击上方金额记一笔</view>
+
+  <view class="block">
+    <view class="block-label">分类</view>
+    <view class="cats">
+      <block wx:for="{{ categories }}" wx:key="*this">
+        <view class="cat {{ category === item ? 'cat-on' : '' }}"
+              data-c="{{ item }}"
+              bindtap="onTapCat"
+              hover-class="cat-hover"
+              hover-start-time="0"
+              hover-stay-time="200">{{ item }}</view>
+      </block>
+    </view>
+  </view>
+
+  <view class="block">
+    <view class="block-label">备注</view>
+    <input class="note-input" placeholder="选填" value="{{ note }}" bindinput="onNote" />
+  </view>
+
+  <view class="block">
+    <view class="block-label">今日 {{ todayCount }} 笔 · {{ todayTotal }}</view>
+    <block wx:if="{{ recent.length > 0 }}">
+      <view class="row-rec row-tap"
+            wx:for="{{ recent }}"
+            wx:key="id"
+            data-id="{{ item.id }}"
+            bindtap="onTapRow"
+            bindlongtap="onLongTapRow"
+            hover-class="row-hover"
+            hover-start-time="0"
+            hover-stay-time="150">
+        <text class="rec-cat">{{ item.category }}</text>
+        <text class="rec-label">{{ item.label || '未命名' }}</text>
+        <text class="rec-amt {{ item.type === '收入' ? 'rec-amt-in' : '' }}">{{ item.amount }}</text>
+      </view>
+    </block>
+    <view wx:else class="muted mt">今天还没有记账，点上方金额开始第一笔</view>
+    <view class="muted mt">本月支出 {{ monthTotal }}</view>
+  </view>
+
+  <!-- sheet 弹层 -->
+  <view wx:if="{{ editing }}" class="sheet-mask" bindtap="onCloseSheet">
+    <view class="sheet" catchtap="noop">
+      <view class="sheet-handle"></view>
+      <view class="sheet-title">{{ draft.id ? '编辑这一笔' : '记一笔' }}</view>
+
+      <!-- 金额显示 -->
+      <view class="amt-display">
+        <text class="amt-sym">¥</text>
+        <text class="amt-num title-serif">{{ draft.display }}</text>
+      </view>
+
+      <!-- 数字键盘 3x4 -->
+      <view class="keypad">
+        <view class="key" data-k="1" bindtap="onTapKey" hover-class="key-hover" hover-start-time="0" hover-stay-time="80">1</view>
+        <view class="key" data-k="2" bindtap="onTapKey" hover-class="key-hover" hover-start-time="0" hover-stay-time="80">2</view>
+        <view class="key" data-k="3" bindtap="onTapKey" hover-class="key-hover" hover-start-time="0" hover-stay-time="80">3</view>
+        <view class="key" data-k="4" bindtap="onTapKey" hover-class="key-hover" hover-start-time="0" hover-stay-time="80">4</view>
+        <view class="key" data-k="5" bindtap="onTapKey" hover-class="key-hover" hover-start-time="0" hover-stay-time="80">5</view>
+        <view class="key" data-k="6" bindtap="onTapKey" hover-class="key-hover" hover-start-time="0" hover-stay-time="80">6</view>
+        <view class="key" data-k="7" bindtap="onTapKey" hover-class="key-hover" hover-start-time="0" hover-stay-time="80">7</view>
+        <view class="key" data-k="8" bindtap="onTapKey" hover-class="key-hover" hover-start-time="0" hover-stay-time="80">8</view>
+        <view class="key" data-k="9" bindtap="onTapKey" hover-class="key-hover" hover-start-time="0" hover-stay-time="80">9</view>
+        <view class="key key-fn" data-k="." bindtap="onTapKey" hover-class="key-hover" hover-start-time="0" hover-stay-time="80">·</view>
+        <view class="key" data-k="0" bindtap="onTapKey" hover-class="key-hover" hover-start-time="0" hover-stay-time="80">0</view>
+        <view class="key key-fn" data-k="back" bindtap="onTapKey" hover-class="key-hover" hover-start-time="0" hover-stay-time="80">⌫</view>
+      </view>
+
+      <!-- 类型切换 -->
+      <view class="form-row">
+        <text class="form-label">类型</text>
+        <view class="chips">
+          <view class="chip {{ draft.type === '支出' ? 'chip-on' : '' }}"
+                data-t="支出" bindtap="onTapDraftType"
+                hover-class="chip-hover" hover-start-time="0" hover-stay-time="200">支出</view>
+          <view class="chip {{ draft.type === '收入' ? 'chip-on' : '' }}"
+                data-t="收入" bindtap="onTapDraftType"
+                hover-class="chip-hover" hover-start-time="0" hover-stay-time="200">收入</view>
+        </view>
+      </view>
+
+      <!-- 分类选择 -->
+      <view class="form-row">
+        <text class="form-label">分类</text>
+        <view class="chips">
+          <block wx:for="{{ categories }}" wx:key="*this">
+            <view class="chip {{ draft.category === item ? 'chip-on' : '' }}"
+                  data-c="{{ item }}" bindtap="onTapDraftCat"
+                  hover-class="chip-hover" hover-start-time="0" hover-stay-time="200">{{ item }}</view>
+          </block>
+        </view>
+      </view>
+
+      <!-- 备注 -->
+      <view class="form-row">
+        <text class="form-label">备注</text>
+        <input class="form-input" placeholder="选填" value="{{ draft.label }}" bindinput="onInputDraftLabel" maxlength="20" />
+      </view>
+
+      <view class="sheet-actions">
+        <view class="sheet-btn ghost" bindtap="onCloseSheet">取消</view>
+        <view wx:if="{{ draft.id }}" class="sheet-btn danger" bindtap="onDeleteDraft">删除</view>
+        <view class="sheet-btn" bindtap="onSaveDraft">{{ draft.id ? '更新' : '保存' }}</view>
+      </view>
+    </view>
+  </view>
+</view>

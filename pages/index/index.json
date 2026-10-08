@@ -1,0 +1,11 @@
+{
+  "navigationBarTitleText": "今日",
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#F8F5EE",
+  "backgroundTextStyle": "dark",
+  "usingComponents": {
+    "card": "/components/card/index",
+    "progress-bar": "/components/progress-bar/index",
+    "section-header": "/components/section-header/index"
+  }
+}

@@ -1,0 +1,89 @@
+<view class="page">
+  <view class="meta">
+    <text class="date">{{ dateLabel }}</text>
+  </view>
+
+  <!-- 顶部 Hero -->
+  <view class="hero">
+    <view class="hero-title title-serif">{{ greeting }}，Jesse</view>
+    <view class="hero-sub">今日完成 4 / 6 件事</view>
+    <view class="hero-bar">
+      <progress-bar value="{{ progress }}" height="14"/>
+    </view>
+  </view>
+
+  <!-- 英语 -->
+  <view class="card-block" bindtap="onTapEnglish">
+    <section-header title="英语" badge="{{ english.streak }} 天连击" />
+    <view class="row between">
+      <text class="num">{{ english.done }} / {{ english.target }}</text>
+      <text class="muted">{{ english.bookTitle }} · 第 {{ english.dayIndex }} 天</text>
+    </view>
+    <view class="bar-wrap">
+      <progress-bar value="{{ english.progress }}"/>
+    </view>
+    <view class="cta-row">
+      <text class="muted fz-12">进度 {{ english.progress }}%</text>
+      <text class="cta">开始 →</text>
+    </view>
+  </view>
+
+  <!-- 健身 -->
+  <view class="card-block" bindtap="onTapWorkout">
+    <section-header title="健身" badge="{{ workout.done ? '已记录' : '未开始' }}" />
+    <view class="row between">
+      <text class="num">{{ workout.parts }}</text>
+      <text class="muted">{{ workout.durationMin }} 分钟</text>
+    </view>
+    <view class="row between meta-row">
+      <text class="muted fz-12">摄入 {{ workout.kcal }} kcal</text>
+      <text class="muted fz-12">P{{ workout.p }} C{{ workout.c }} F{{ workout.f }}</text>
+    </view>
+    <view class="cta-row">
+      <text class="muted fz-12">{{ workout.done ? '今日已打卡' : '去记录' }}</text>
+      <text class="cta">{{ workout.done ? '查看' : '开始 →' }}</text>
+    </view>
+  </view>
+
+  <!-- 记账 -->
+  <view class="card-block" bindtap="onTapLedger">
+    <section-header title="记账" badge="今日 {{ ledger.count }} 笔" />
+    <view class="row between">
+      <text class="num">{{ ledger.todayText }}</text>
+      <text class="muted">本月 {{ ledger.monthText }}</text>
+    </view>
+    <view class="recent">
+      <block wx:for="{{ ledger.recent }}" wx:key="label">
+        <view class="recent-row">
+          <text class="recent-cat">{{ item.category }}</text>
+          <text class="recent-label">{{ item.label }}</text>
+          <text class="recent-amt">{{ item.amount }}</text>
+        </view>
+      </block>
+    </view>
+    <view class="cta-row">
+      <text class="muted fz-12">点此记一笔</text>
+      <text class="cta">+ 记一笔</text>
+    </view>
+  </view>
+
+  <!-- 新闻 -->
+  <view class="card-block news-block">
+    <section-header title="财经新闻" badge="今日 {{ news.count }} 条" action="查看全部 →" />
+    <block wx:for="{{ news.items }}" wx:key="id" wx:for-item="n">
+      <view class="news-row" data-id="{{ n.id }}" bindtap="onTapNewsItem">
+        <view class="news-meta">
+          <text class="news-cat">{{ n.category }}</text>
+          <text class="news-source">{{ n.source }} · {{ n.timeAgo }}</text>
+        </view>
+        <view class="news-title">{{ n.title }}</view>
+        <view class="news-summary">{{ n.summary }}</view>
+      </view>
+    </block>
+    <view class="notice">
+      <text>新闻仅展示摘要与来源链接，全文请前往原网站阅读。</text>
+    </view>
+  </view>
+
+  <view class="spacer"/>
+</view>

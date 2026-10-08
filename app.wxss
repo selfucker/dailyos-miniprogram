@@ -1,0 +1,55 @@
+/* DailyOS · 全局设计令牌与基础样式 */
+page {
+  --color-bg: #F8F5EE;
+  --color-surface: #FFFFFF;
+  --color-ink: #161616;
+  --color-muted: #6B6660;
+  --color-brand: #2D5F3F;
+  --color-brand-soft: #E6EDE7;
+  --color-accent: #C4A35A;
+  --color-urgent: #B5482E;
+  --color-border: #E5DFD3;
+  --color-divider: #EFEAE0;
+
+  --font-serif: 'Charter', 'Georgia', 'Source Han Serif SC', 'PingFang SC', serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', 'Inter', sans-serif;
+
+  --radius-card: 14rpx;
+  --radius-pill: 999rpx;
+  --space-card: 20rpx;
+  --space-section: 32rpx;
+
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  font-size: 28rpx;
+  line-height: 1.6;
+  font-family: var(--font-sans);
+}
+
+view, text, image, button, input, textarea, scroll-view {
+  box-sizing: border-box;
+}
+
+button {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  line-height: normal;
+}
+button::after { border: none; }
+
+/* 通用文本工具类 */
+.title-serif { font-family: var(--font-serif); }
+.text-muted { color: var(--color-muted); }
+.text-brand { color: var(--color-brand); }
+.text-accent { color: var(--color-accent); }
+.text-urgent { color: var(--color-urgent); }
+.text-ink { color: var(--color-ink); }
+
+.fz-12 { font-size: 24rpx; }
+.fz-14 { font-size: 28rpx; }
+.fz-16 { font-size: 32rpx; }
+.fz-20 { font-size: 40rpx; }
+.fz-24 { font-size: 48rpx; }
+.fz-32 { font-size: 64rpx; }

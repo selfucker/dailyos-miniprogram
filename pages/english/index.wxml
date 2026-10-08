@@ -1,0 +1,37 @@
+<view class="page">
+  <view class="meta"><text class="date">{{ dateLabel }}</text></view>
+
+  <!-- 词书选择：横向 scroll-view 用 view wx:for（不用 enhanced，避免框架层渲染异常） -->
+  <scroll-view scroll-x class="book-strip">
+    <view wx:for="{{ books }}" wx:key="id"
+          class="book-item {{ bookId === item.id ? 'book-active' : '' }}"
+          data-id="{{ item.id }}"
+          bindtap="onSelectBook"
+          hover-class="book-tap-hover"
+          hover-start-time="0"
+          hover-stay-time="180">
+      <text class="book-title">{{ item.title }}</text>
+      <text class="book-sub">{{ item.subtitle }}</text>
+    </view>
+  </scroll-view>
+
+  <view class="hero">
+    <view class="hero-title title-serif">{{ bookTitle }}</view>
+    <view class="hero-sub">第 {{ dayIndex }} 天 · 连续 {{ streak }} 天</view>
+  </view>
+
+  <view class="counter">
+    <text class="num title-serif">{{ done }} / {{ target }}</text>
+  </view>
+  <view class="bar"><progress-bar value="{{ progress }}" height="14"/></view>
+
+  <view class="cta-wrap">
+    <view class="cta-btn" bindtap="onTapStart">{{ ctaText }}</view>
+  </view>
+
+  <view class="hint-line">
+    <text wx:if="{{ done === 0 }}">点词书卡片切换；完成一组共 {{ target }} 词。</text>
+    <text wx:elif="{{ done >= target }}">今日已完成 {{ target }} 词，明天继续。</text>
+    <text wx:else>今日已学习 {{ done }} 词，点上方按钮继续。</text>
+  </view>
+</view>

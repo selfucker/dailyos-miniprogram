@@ -1,0 +1,3 @@
+<view class="bar" style="height: {{ height }}rpx;">
+  <view class="fill" style="width: {{ value }}%; background-color: {{ color || '#2D5F3F' }};"></view>
+</view>

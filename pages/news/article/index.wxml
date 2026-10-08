@@ -1,0 +1,20 @@
+<!--pages/news/article/index.wxml-->
+<view class="page">
+  <web-view wx:if="{{ url && !failed }}" src="{{ url }}" binderror="onError" bindload="onLoadDone"></web-view>
+
+  <view wx:elif="{{ url }}" class="fallback">
+    <view class="fb-icon">!</view>
+    <view class="fb-title">页面加载失败</view>
+    <view class="fb-desc">该新闻链接打开异常，可能是站点限流或网络问题。</view>
+    <view class="fb-url">{{ url }}</view>
+    <button class="fb-btn" bindtap="onCopyUrl">复制全文链接</button>
+    <button class="fb-btn ghost" bindtap="onBack">返回上一页</button>
+  </view>
+
+  <view wx:else class="fallback">
+    <view class="fb-icon">!</view>
+    <view class="fb-title">链接为空</view>
+    <view class="fb-desc">没有传入新闻地址。</view>
+    <button class="fb-btn ghost" bindtap="onBack">返回</button>
+  </view>
+</view>

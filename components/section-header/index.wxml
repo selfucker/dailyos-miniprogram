@@ -1,0 +1,7 @@
+<view class="row" bindtap="onTap">
+  <view class="left">
+    <view class="title">{{ title }}</view>
+    <view class="badge" wx:if="{{ badge }}">{{ badge }}</view>
+  </view>
+  <view class="action" wx:if="{{ action }}">{{ action }}</view>
+</view>

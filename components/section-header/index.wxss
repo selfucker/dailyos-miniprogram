@@ -1,0 +1,23 @@
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4rpx;
+  margin-bottom: 16rpx;
+}
+.left { display: flex; align-items: baseline; }
+.title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--color-ink);
+  font-family: var(--font-serif);
+}
+.badge {
+  margin-left: 14rpx;
+  font-size: 22rpx;
+  color: var(--color-muted);
+}
+.action {
+  font-size: 24rpx;
+  color: var(--color-brand);
+}

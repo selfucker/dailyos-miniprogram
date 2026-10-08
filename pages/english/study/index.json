@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "今日打卡",
+  "usingComponents": {
+    "progress-bar": "/components/progress-bar/index"
+  }
+}

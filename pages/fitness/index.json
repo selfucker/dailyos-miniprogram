@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "健身",
+  "usingComponents": {
+    "card": "/components/card/index"
+  }
+}

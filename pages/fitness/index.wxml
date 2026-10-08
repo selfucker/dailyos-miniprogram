@@ -1,0 +1,198 @@
+<view class="page">
+  <view class="meta"><text class="date">{{ dateLabel }}</text></view>
+
+  <!-- 训练 -->
+  <view class="block">
+    <view class="block-title title-serif">训练</view>
+    <view class="row">
+      <text class="label">部位</text>
+      <view class="chips">
+        <block wx:for="{{ partsOptions }}" wx:key="*this">
+          <view class="chip {{ parts.indexOf(item) >= 0 ? 'chip-on' : '' }}"
+                data-part="{{ item }}"
+                bindtap="onTapPart"
+                hover-class="chip-hover"
+                hover-start-time="0"
+                hover-stay-time="250">
+            {{ item }}
+          </view>
+        </block>
+      </view>
+    </view>
+    <view class="row mt row-tap" bindtap="onTapWorkoutSettings"
+          hover-class="row-hover" hover-start-time="0" hover-stay-time="150">
+      <text class="label">时长</text>
+      <text class="value">{{ durationMin }} 分钟</text>
+    </view>
+    <view class="row mt row-tap" bindtap="onTapWorkoutSettings"
+          hover-class="row-hover" hover-start-time="0" hover-stay-time="150">
+      <text class="label">强度</text>
+      <text class="value">{{ intensity }}</text>
+    </view>
+    <view class="row mt">
+      <text class="label">消耗</text>
+      <text class="value strong">{{ burnText }}</text>
+    </view>
+  </view>
+
+  <!-- 饮食 -->
+  <view class="block">
+    <view class="block-title title-serif">饮食</view>
+    <block wx:for="{{ meals }}" wx:key="type">
+      <view class="meal-row row-tap"
+            data-type="{{ item.type }}"
+            bindtap="onTapMeal"
+            hover-class="row-hover" hover-start-time="0" hover-stay-time="150">
+        <text class="meal-type">{{ item.type }}</text>
+        <text class="meal-kcal">{{ item.set ? item.kcal + ' kcal' : '—' }}</text>
+        <text class="meal-macros" wx:if="{{ item.set }}">P{{ item.p }} C{{ item.c }} F{{ item.f }}</text>
+        <text class="meal-macros" wx:else>未记录</text>
+      </view>
+    </block>
+    <view class="meal-row total">
+      <text class="meal-type">合计摄入</text>
+      <text class="meal-kcal">{{ intakeKcal }} kcal</text>
+      <text class="meal-macros">P{{ totalP }} C{{ totalC }} F{{ totalF }}</text>
+    </view>
+  </view>
+
+  <!-- 身体数据 -->
+  <view class="block">
+    <view class="block-head">
+      <view class="block-title title-serif">身体数据</view>
+      <view class="block-action" bindtap="onTapEditBody">记录</view>
+    </view>
+    <view class="metric-row">
+      <view class="metric">
+        <text class="metric-label">体重</text>
+        <view class="metric-value">
+          <text class="metric-number">{{ weight }}</text>
+          <text class="metric-unit">kg</text>
+        </view>
+        <text class="metric-delta {{ weightDelta < 0 ? 'down' : (weightDelta > 0 ? 'up' : 'flat') }}">{{ weightDeltaText }}</text>
+      </view>
+      <view class="metric-divider"></view>
+      <view class="metric">
+        <text class="metric-label">体脂率</text>
+        <view class="metric-value">
+          <text class="metric-number">{{ bodyFat }}</text>
+          <text class="metric-unit">%</text>
+        </view>
+        <text class="metric-delta {{ bodyFatDelta < 0 ? 'down' : (bodyFatDelta > 0 ? 'up' : 'flat') }}">{{ bodyFatDeltaText }}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 近 7 天趋势 -->
+  <view class="block">
+    <view class="block-title title-serif">近 7 天体重</view>
+    <view class="trend-meta">
+      <text class="trend-stat">最高 {{ trendHigh }}kg</text>
+      <text class="trend-stat">最低 {{ trendLow }}kg</text>
+      <text class="trend-stat">均值 {{ trendAvg }}kg</text>
+    </view>
+    <view class="trend-canvas-wrap">
+      <canvas canvas-id="weightTrend" class="trend-canvas"></canvas>
+    </view>
+    <view class="trend-axis">
+      <block wx:for="{{ trendLabels }}" wx:key="*this">
+        <text class="trend-tick">{{ item }}</text>
+      </block>
+    </view>
+  </view>
+
+  <view class="block soft">
+    <text class="muted">本周训练 {{ weekCount }} 次 · 累计 {{ weekMinutes }} 分钟</text>
+  </view>
+
+  <view class="cta-wrap">
+    <view class="cta-btn" bindtap="onTapSave">保存今日</view>
+  </view>
+
+  <!-- 身体数据录入弹层 -->
+  <view wx:if="{{ editingBody }}" class="sheet-mask" bindtap="onCloseSheet">
+    <view class="sheet" catchtap="noop">
+      <view class="sheet-handle"></view>
+      <view class="sheet-title">记录身体数据</view>
+      <view class="form-row">
+        <text class="form-label">体重 (kg)</text>
+        <input class="form-input" type="digit" value="{{ draftWeight }}" bindinput="onInputWeight" placeholder="如 68.5" confirm-type="done" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">体脂率 (%)</text>
+        <input class="form-input" type="digit" value="{{ draftBodyFat }}" bindinput="onInputBodyFat" placeholder="如 18.2" confirm-type="done" />
+      </view>
+      <view class="sheet-tip">保存后会更新今日数据并入折线图。</view>
+      <view class="sheet-actions">
+        <view class="sheet-btn ghost" bindtap="onCloseSheet">取消</view>
+        <view class="sheet-btn" bindtap="onSaveBody">保存</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 训练设置弹层 -->
+  <view wx:if="{{ editingWorkout }}" class="sheet-mask" bindtap="onCloseWorkoutSheet">
+    <view class="sheet" catchtap="noop">
+      <view class="sheet-handle"></view>
+      <view class="sheet-title">训练设置</view>
+      <view class="form-row">
+        <text class="form-label">时长 (分钟)</text>
+        <input class="form-input" type="number" value="{{ workoutDraft.durationMin }}" bindinput="onInputDuration" placeholder="如 60" />
+      </view>
+      <view class="form-section">
+        <text class="form-section-label">强度</text>
+        <view class="chip-group">
+          <view class="sheet-chip {{ workoutDraft.intensity === '轻度' ? 'sheet-chip-on' : '' }}"
+                data-val="轻度"
+                bindtap="onSelectIntensity"
+                hover-class="sheet-chip-hover" hover-start-time="0" hover-stay-time="200">轻度</view>
+          <view class="sheet-chip {{ workoutDraft.intensity === '适中' ? 'sheet-chip-on' : '' }}"
+                data-val="适中"
+                bindtap="onSelectIntensity"
+                hover-class="sheet-chip-hover" hover-start-time="0" hover-stay-time="200">适中</view>
+          <view class="sheet-chip {{ workoutDraft.intensity === '高强度' ? 'sheet-chip-on' : '' }}"
+                data-val="高强度"
+                bindtap="onSelectIntensity"
+                hover-class="sheet-chip-hover" hover-start-time="0" hover-stay-time="200">高强度</view>
+        </view>
+      </view>
+      <view class="sheet-tip">保存后按 7 / 10 / 13 × 时长自动估算消耗 kcal。</view>
+      <view class="sheet-actions">
+        <view class="sheet-btn ghost" bindtap="onCloseWorkoutSheet">取消</view>
+        <view class="sheet-btn" bindtap="onSaveWorkout">保存</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 餐次录入弹层 -->
+  <view wx:if="{{ editingMeal }}" class="sheet-mask" bindtap="onCloseMealSheet">
+    <view class="sheet" catchtap="noop">
+      <view class="sheet-handle"></view>
+      <view class="sheet-title-wrap">
+        <text class="sheet-title">记录{{ mealDraft.type }}</text>
+        <view class="sheet-clear" bindtap="onClearMeal">清空</view>
+      </view>
+      <view class="form-row">
+        <text class="form-label">热量 (kcal)</text>
+        <input class="form-input" type="digit" value="{{ mealDraft.kcal }}" bindinput="onInputMealKcal" placeholder="0" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">蛋白质 P (g)</text>
+        <input class="form-input" type="digit" value="{{ mealDraft.p }}" bindinput="onInputMealP" placeholder="0" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">碳水 C (g)</text>
+        <input class="form-input" type="digit" value="{{ mealDraft.c }}" bindinput="onInputMealC" placeholder="0" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">脂肪 F (g)</text>
+        <input class="form-input" type="digit" value="{{ mealDraft.f }}" bindinput="onInputMealF" placeholder="0" />
+      </view>
+      <view class="sheet-tip">留空会被当作 0 处理。</view>
+      <view class="sheet-actions">
+        <view class="sheet-btn ghost" bindtap="onCloseMealSheet">取消</view>
+        <view class="sheet-btn" bindtap="onSaveMeal">保存</view>
+      </view>
+    </view>
+  </view>
+</view>

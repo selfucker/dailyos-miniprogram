@@ -1,0 +1,55 @@
+<view class="page">
+  <view class="head">
+    <view class="head-progress">
+      <text class="head-num">{{ displayIndex }} / {{ total }}</text>
+      <progress-bar value="{{ progress }}" height="6" />
+    </view>
+    <view class="head-close" bindtap="onClose">×</view>
+  </view>
+
+  <view wx:if="{{ !done }}" class="card-area">
+    <view class="flashcard {{ flipped ? 'flipped' : '' }}" bindtap="onTapCard">
+      <view class="card-face card-front">
+        <text class="word">{{ currentWord.word }}</text>
+        <text class="phonetic">{{ currentWord.phonetic }}</text>
+        <text class="hint">轻点卡片查看释义</text>
+      </view>
+      <view class="card-face card-back">
+        <text class="meaning">{{ currentWord.meaning }}</text>
+        <text class="example">{{ currentWord.example }}</text>
+      </view>
+    </view>
+  </view>
+
+  <view wx:else class="done-area">
+    <view class="done-icon">✓</view>
+    <view class="done-title">今日打卡完成</view>
+    <view class="done-sub">{{ bookTitle }} · 共 {{ total }} 词</view>
+    <view class="done-stats">
+      <view class="stat">
+        <text class="stat-num">{{ total }}</text>
+        <text class="stat-label">已学习</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat">
+        <text class="stat-num brand">{{ knownCount }}</text>
+        <text class="stat-label">认识</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat">
+        <text class="stat-num warn">{{ unknownCount }}</text>
+        <text class="stat-label">不认识</text>
+      </view>
+    </view>
+    <view class="done-streak">连续学习 {{ streak }} 天</view>
+    <view class="done-actions">
+      <view class="btn ghost" bindtap="onClose">返回主页</view>
+      <view class="btn brand" bindtap="onAgain">再来一组</view>
+    </view>
+  </view>
+
+  <view wx:if="{{ !done }}" class="actions">
+    <view class="btn ghost-warn" hover-class="btn-warn-hover" hover-start-time="0" bindtap="onTapUnknown">不认识</view>
+    <view class="btn brand" hover-class="btn-brand-hover" hover-start-time="0" bindtap="onTapKnown">认识</view>
+  </view>
+</view>

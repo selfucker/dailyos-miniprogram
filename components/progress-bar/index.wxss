@@ -1,0 +1,11 @@
+.bar {
+  width: 100%;
+  background-color: var(--color-divider);
+  border-radius: 999rpx;
+  overflow: hidden;
+}
+.fill {
+  height: 100%;
+  border-radius: 999rpx;
+  transition: width 200ms ease;
+}

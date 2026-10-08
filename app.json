@@ -1,0 +1,59 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/english/index",
+    "pages/english/study/index",
+    "pages/fitness/index",
+    "pages/account/index",
+    "pages/profile/index",
+    "pages/news/article/index"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#F8F5EE",
+    "navigationBarTitleText": "DailyOS",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#F8F5EE",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#6B6660",
+    "selectedColor": "#2D5F3F",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "images/tab/home.png",
+        "selectedIconPath": "images/tab/home-active.png"
+      },
+      {
+        "pagePath": "pages/english/index",
+        "text": "英语",
+        "iconPath": "images/tab/english.png",
+        "selectedIconPath": "images/tab/english-active.png"
+      },
+      {
+        "pagePath": "pages/fitness/index",
+        "text": "健身",
+        "iconPath": "images/tab/fitness.png",
+        "selectedIconPath": "images/tab/fitness-active.png"
+      },
+      {
+        "pagePath": "pages/account/index",
+        "text": "记账",
+        "iconPath": "images/tab/account.png",
+        "selectedIconPath": "images/tab/account-active.png"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的",
+        "iconPath": "images/tab/profile.png",
+        "selectedIconPath": "images/tab/profile-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}
