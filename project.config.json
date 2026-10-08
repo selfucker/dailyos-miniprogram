@@ -25,12 +25,30 @@
   },
   "packOptions": {
     "ignore": [
-      { "type": "folder", "value": "scripts" },
-      { "type": "folder", "value": ".github" },
-      { "type": "file", "value": "README.md" },
-      { "type": "file", "value": ".gitignore" },
-      { "type": "file", "value": ".gitattributes" },
-      { "type": "file", "value": "package.json" }
+      {
+        "type": "folder",
+        "value": "scripts"
+      },
+      {
+        "type": "folder",
+        "value": ".github"
+      },
+      {
+        "type": "file",
+        "value": "README.md"
+      },
+      {
+        "type": "file",
+        "value": ".gitignore"
+      },
+      {
+        "type": "file",
+        "value": ".gitattributes"
+      },
+      {
+        "type": "file",
+        "value": "package.json"
+      }
     ],
     "include": []
   },
