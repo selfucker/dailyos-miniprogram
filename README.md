@@ -6,6 +6,18 @@
 - AppID：`wx1ac3e868f6f662ab`
 - 后端：可选。`utils/config.js` 里配了 `http://127.0.0.1:8080/api/v1`，**后端没起也能跑**（自动回落本地占位数据）
 
+## 界面预览
+
+| 首页 | 英语打卡（含本月打卡日历） | 健身记录 |
+|---|---|---|
+| ![首页](docs/images/home.png) | ![英语打卡](docs/images/english.png) | ![健身记录](docs/images/fitness.png) |
+
+| 记账（含月度统计入口） | 我的（统计 / 打卡提醒 / 数据备份） |
+|---|---|
+| ![记账](docs/images/account.png) | ![我的](docs/images/profile.png) |
+
+> 截图为微信开发者工具模拟器实拍，数据是真实使用记录。
+
 ## 功能一览
 
 | 模块 | 能力 |

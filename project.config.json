@@ -48,6 +48,10 @@
       {
         "type": "file",
         "value": "package.json"
+      },
+      {
+        "type": "folder",
+        "value": "docs"
       }
     ],
     "include": []

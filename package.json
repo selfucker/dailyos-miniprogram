@@ -4,7 +4,7 @@
   "private": true,
   "description": "DailyOS 微信小程序：英语打卡（含错词本）/ 健身 / 记账 / 资讯",
   "scripts": {
-    "test": "node scripts/test-store.js && node scripts/test-backup.js && node scripts/test-wrong.js && node scripts/test-notify.js && node scripts/test-month.js && node scripts/test-fitness.js",
+    "test": "node scripts/test-store.js && node scripts/test-backup.js && node scripts/test-wrong.js && node scripts/test-notify.js && node scripts/test-month.js && node scripts/test-fitness.js && node scripts/smoke-pages.js",
     "check": "node scripts/check-project.js",
     "size": "node scripts/check-size.js",
     "verify": "npm run test && npm run check && npm run size"
