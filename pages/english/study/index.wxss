@@ -111,6 +111,20 @@
 .stat-divider { width: 1rpx; height: 72rpx; background: var(--color-divider); }
 
 .done-streak { margin-top: 32rpx; font-size: 28rpx; color: var(--color-ink); }
+.done-wrong { margin-top: 12rpx; font-size: 24rpx; color: var(--color-muted); }
+
+/* 卡片左上角的「复习 / 新词」标记 */
+.card-tag {
+  position: absolute;
+  top: 24rpx;
+  left: 24rpx;
+  padding: 4rpx 16rpx;
+  border-radius: var(--radius-pill);
+  font-size: 20rpx;
+  color: var(--color-muted);
+  background-color: var(--color-divider);
+}
+.card-tag.tag-review { color: #FFFFFF; background-color: var(--color-accent); }
 .done-actions { margin-top: 56rpx; display: flex; gap: 16rpx; }
 
 /* 分享按钮：描边款 */

@@ -15,6 +15,7 @@ Page({
     target: 20,
     progress: 0,
     ctaText: '开始今日打卡',
+    wrongCount: 0,
     remote: false
   },
 
@@ -52,7 +53,8 @@ Page({
       done: s.done,
       target: s.target,
       progress: s.progress,
-      ctaText
+      ctaText,
+      wrongCount: store.getWrongSummary().count
     })
   },
 
@@ -65,6 +67,10 @@ Page({
 
   onTapStart() {
     wx.navigateTo({ url: '/pages/english/study/index' })
+  },
+
+  onTapWrong() {
+    wx.navigateTo({ url: '/pages/english/wrong/index' })
   },
 
   // —— 分享 ——

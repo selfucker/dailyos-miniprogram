@@ -79,3 +79,18 @@
   font-weight: 500;
 }
 .share-btn-hover { background-color: var(--color-brand-soft); }
+
+/* 错词本入口 */
+.wrong-entry {
+  margin-top: 32rpx;
+  display: flex;
+  align-items: center;
+  padding: 24rpx 28rpx;
+  background-color: var(--color-surface);
+  border: 1rpx solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+.wrong-entry-hover { background-color: var(--color-brand-soft); }
+.wrong-entry-label { flex: 1; font-size: 28rpx; color: var(--color-ink); }
+.wrong-entry-count { font-size: 24rpx; color: var(--color-muted); }
+.wrong-entry-arrow { margin-left: 12rpx; font-size: 32rpx; color: var(--color-muted); }

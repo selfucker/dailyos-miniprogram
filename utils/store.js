@@ -11,6 +11,7 @@ const KEYS = {
   englishBook: 'english.book.v1',
   englishToday: 'english.today.v1',
   englishHistory: 'english.history.v1',
+  englishWrong: 'english.wrong.v1',
   accountRecords: 'account.records.v1',
   fitnessToday: 'fitness.today.v1',
   profile: 'user.profile.v1'
@@ -169,6 +170,115 @@ function setFitnessToday(payload) {
   return write(KEYS.fitnessToday, payload)
 }
 
+// ============ 英语错词本 ============
+// 一条错词记录：{ word, phonetic, meaning, example, wrongCount, rightStreak, addedAt, lastSeenAt }
+const WRONG_LIMIT = 200      // 上限：超了丢最早加入的，避免无限增长
+const GRADUATE_STREAK = 2    // 复习时连续答对几次，才移出错词本（防手滑）
+
+function getWrongWords() {
+  const list = read(KEYS.englishWrong, [])
+  return Array.isArray(list) ? list : []
+}
+
+function setWrongWords(list) {
+  const arr = Array.isArray(list) ? list : []
+  const trimmed = arr
+    .slice()
+    .sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0))
+    .slice(0, WRONG_LIMIT)
+  return write(KEYS.englishWrong, trimmed)
+}
+
+// 打卡时答"不认识"→ 记入错词本（已存在则累加错误次数、连对清零）
+function addWrongWord(item) {
+  if (!item || !item.word) return getWrongWords()
+  const list = getWrongWords()
+  const idx = list.findIndex(w => w.word === item.word)
+  const now = Date.now()
+
+  if (idx >= 0) {
+    list[idx] = Object.assign({}, list[idx], {
+      wrongCount: (list[idx].wrongCount || 0) + 1,
+      rightStreak: 0,
+      lastSeenAt: now
+    })
+  } else {
+    list.push({
+      word: item.word,
+      phonetic: item.phonetic || '',
+      meaning: item.meaning || '',
+      example: item.example || '',
+      wrongCount: 1,
+      rightStreak: 0,
+      addedAt: now,
+      lastSeenAt: now
+    })
+  }
+  setWrongWords(list)
+  return getWrongWords()
+}
+
+// 复习时答"认识"→ 连对计数 +1，达到 GRADUATE_STREAK 就移出
+function markWrongWordRight(wordText) {
+  const list = getWrongWords()
+  const idx = list.findIndex(w => w.word === wordText)
+  if (idx < 0) return { removed: false, rightStreak: 0 }
+
+  const next = (list[idx].rightStreak || 0) + 1
+  let removed = false
+  if (next >= GRADUATE_STREAK) {
+    list.splice(idx, 1)
+    removed = true
+  } else {
+    list[idx] = Object.assign({}, list[idx], { rightStreak: next, lastSeenAt: Date.now() })
+  }
+  setWrongWords(list)
+  return { removed, rightStreak: next }
+}
+
+function removeWrongWord(wordText) {
+  const list = getWrongWords().filter(w => w.word !== wordText)
+  setWrongWords(list)
+  return list
+}
+
+// 复习队列：错得多的优先，其次最近错的；补齐 source='review' 标记
+function pickReviewWords(limit) {
+  return getWrongWords()
+    .slice()
+    .sort((a, b) => (b.wrongCount || 0) - (a.wrongCount || 0) || (b.lastSeenAt || 0) - (a.lastSeenAt || 0))
+    .slice(0, limit || 8)
+    .map(w => ({
+      word: w.word,
+      phonetic: w.phonetic,
+      meaning: w.meaning,
+      example: w.example,
+      status: 'new',
+      source: 'review'
+    }))
+}
+
+// 组今日队列：先复习错词，再补新词（去重），总数不超过 total
+function buildDailyQueue(newWords, reviewLimit, total) {
+  const review = pickReviewWords(reviewLimit)
+  const seen = {}
+  review.forEach(w => { seen[w.word] = true })
+
+  const fresh = (newWords || [])
+    .filter(w => w && w.word && !seen[w.word])
+    .map(w => Object.assign({}, w, { source: 'new' }))
+
+  return review.concat(fresh).slice(0, total || 20)
+}
+
+function getWrongSummary() {
+  const list = getWrongWords()
+  return {
+    count: list.length,
+    almost: list.filter(w => (w.rightStreak || 0) > 0).length
+  }
+}
+
 // ============ 个人资料 ============
 // 目前只存在本地；以后接入账号体系（登录后拉取）改这里即可
 const DEFAULT_PROFILE = { nickname: 'Jesse' }
@@ -191,6 +301,9 @@ module.exports = {
   getEnglishBookId, setEnglishBookId,
   getEnglishToday, setEnglishToday,
   getEnglishHistory, addEnglishHistoryDay, getEnglishSummary,
+  getWrongWords, setWrongWords, addWrongWord, markWrongWordRight, removeWrongWord,
+  pickReviewWords, buildDailyQueue, getWrongSummary,
+  WRONG_LIMIT, GRADUATE_STREAK,
   getRecords, setRecords, getLedgerSummary,
   getFitnessToday, setFitnessToday,
   getProfile, setProfile, DEFAULT_PROFILE

@@ -3,6 +3,7 @@
     "pages/index/index",
     "pages/english/index",
     "pages/english/study/index",
+    "pages/english/wrong/index",
     "pages/fitness/index",
     "pages/account/index",
     "pages/profile/index",

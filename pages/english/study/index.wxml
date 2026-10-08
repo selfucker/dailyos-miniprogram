@@ -10,6 +10,7 @@
   <view wx:if="{{ !done }}" class="card-area">
     <view class="flashcard {{ flipped ? 'flipped' : '' }}" bindtap="onTapCard">
       <view class="card-face card-front">
+        <text class="card-tag {{ currentWord.source === 'review' ? 'tag-review' : '' }}">{{ currentWord.source === 'review' ? '复习' : '新词' }}</text>
         <text class="word">{{ currentWord.word }}</text>
         <text class="phonetic">{{ currentWord.phonetic }}</text>
         <text class="hint">轻点卡片查看释义</text>
@@ -42,6 +43,7 @@
       </view>
     </view>
     <view class="done-streak">连续学习 {{ streak }} 天</view>
+    <view class="done-wrong">本次复习 {{ reviewTotal }} 词 · 错词本还剩 {{ wrongLeft }} 个</view>
     <view class="done-actions">
       <view class="btn ghost" bindtap="onClose">返回主页</view>
       <view class="btn brand" bindtap="onAgain">再来一组</view>

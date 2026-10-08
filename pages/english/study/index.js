@@ -2,6 +2,9 @@
 const { getBook, dailyWordsAsync } = require('../../../utils/words.js')
 const store = require('../../../utils/store.js')
 
+const DAILY_TOTAL = 20      // 一组总词数
+const REVIEW_LIMIT = 8      // 一组里最多复习几个错词
+
 Page({
   data: {
     bookId: 'basic_en_a',
@@ -16,7 +19,10 @@ Page({
     done: false,
     knownCount: 0,
     unknownCount: 0,
-    streak: 0
+    streak: 0,
+    reviewTotal: 0,
+    wrongLeft: 0,
+    graduateStreak: store.GRADUATE_STREAK
   },
 
   onLoad() {
@@ -34,7 +40,8 @@ Page({
 
     // 异步拉远端 20 词（后端不可用时 words.js 内部会回落本地占位词）
     dailyWordsAsync(bookId, 20).then(words => {
-      const q = (words || []).map(w => Object.assign({}, w, { status: 'new' }))
+      // 先复习错词，再补新词
+      const q = store.buildDailyQueue(words, REVIEW_LIMIT, DAILY_TOTAL)
       this.applyQueue(book, q, 0, 0, 0, false)
     })
   },
@@ -57,7 +64,9 @@ Page({
       unknownCount: unknown,
       done: !!done,
       flipped: false,
-      streak: this.computeStreak()
+      streak: this.computeStreak(),
+      reviewTotal: queue.filter(w => w && w.source === 'review').length,
+      wrongLeft: store.getWrongSummary().count
     })
   },
 
@@ -88,8 +97,15 @@ Page({
 
   advance(status) {
     const { queue, current, knownCount, unknownCount } = this.data
+    const cur = queue[current] || {}
     const q = queue.slice()
-    q[current] = Object.assign({}, q[current], { status })
+    q[current] = Object.assign({}, cur, { status })
+
+    // 错词本联动：答"不认识"→ 收录；复习词答"认识"→ 连对计数（够次数自动毕业）
+    if (cur.word) {
+      if (status === 'unknown') store.addWrongWord(cur)
+      else if (status === 'known' && cur.source === 'review') store.markWrongWordRight(cur.word)
+    }
     const known = knownCount + (status === 'known' ? 1 : 0)
     const unknown = unknownCount + (status === 'unknown' ? 1 : 0)
     const next = current + 1
@@ -125,7 +141,10 @@ Page({
   finishSession() {
     store.addEnglishHistoryDay()   // 把今天记进打卡历史（内部自动去重）
     this.persist()
-    this.setData({ streak: this.computeStreak() })
+    this.setData({
+      streak: this.computeStreak(),
+      wrongLeft: store.getWrongSummary().count
+    })
   },
 
   persist() {
@@ -158,7 +177,7 @@ Page({
     const self = this
     const bookId = this.data.bookId
     dailyWordsAsync(bookId, 20).then(words => {
-      const queue = (words || []).map(w => Object.assign({}, w, { status: 'new' }))
+      const queue = store.buildDailyQueue(words, REVIEW_LIMIT, DAILY_TOTAL)
       self.setData({
         queue,
         current: 0,
@@ -169,7 +188,9 @@ Page({
         flipped: false,
         done: false,
         knownCount: 0,
-        unknownCount: 0
+        unknownCount: 0,
+        reviewTotal: queue.filter(w => w.source === 'review').length,
+        wrongLeft: store.getWrongSummary().count
       })
       self.persist()
     })

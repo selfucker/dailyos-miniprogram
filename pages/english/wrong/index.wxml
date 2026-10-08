@@ -1,0 +1,39 @@
+<view class="page">
+  <view class="head-card">
+    <view class="head-num title-serif">{{ count }}</view>
+    <view class="head-label">个错词待复习</view>
+    <view class="head-tip">复习时连续答对 {{ graduateStreak }} 次会自动移出；也可以点下面的词手动移出。</view>
+    <view class="head-btn" wx:if="{{ count > 0 }}" bindtap="onTapStudy" hover-class="head-btn-hover">去复习这些词</view>
+  </view>
+
+  <view class="list" wx:if="{{ count > 0 }}">
+    <view class="row"
+          wx:for="{{ list }}"
+          wx:key="word"
+          data-word="{{ item.word }}"
+          bindtap="onTapWord"
+          hover-class="row-hover"
+          hover-start-time="0"
+          hover-stay-time="150">
+      <view class="row-main">
+        <view class="row-top">
+          <text class="word">{{ item.word }}</text>
+          <text class="phonetic">{{ item.phonetic }}</text>
+        </view>
+        <view class="meaning">{{ item.meaning }}</view>
+        <view class="row-meta">
+          <text class="meta-wrong">错 {{ item.wrongCount }} 次</text>
+          <text class="meta-streak" wx:if="{{ item.streakText }}"> · {{ item.streakText }}</text>
+          <text class="meta-date"> · {{ item.addedText }}加入</text>
+        </view>
+      </view>
+      <text class="row-action">移出</text>
+    </view>
+  </view>
+
+  <view class="empty" wx:else>
+    <view class="empty-icon">✓</view>
+    <view class="empty-title">错词本是空的</view>
+    <view class="empty-sub">打卡时选「不认识」的词会自动收进这里</view>
+  </view>
+</view>

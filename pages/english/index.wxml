@@ -36,4 +36,14 @@
     <text wx:elif="{{ done >= target }}">今日已完成 {{ target }} 词，明天继续。</text>
     <text wx:else>今日已学习 {{ done }} 词，点上方按钮继续。</text>
   </view>
+
+  <view class="wrong-entry"
+        bindtap="onTapWrong"
+        hover-class="wrong-entry-hover"
+        hover-start-time="0"
+        hover-stay-time="150">
+    <text class="wrong-entry-label">错词本</text>
+    <text class="wrong-entry-count">{{ wrongCount }} 个待复习</text>
+    <text class="wrong-entry-arrow">›</text>
+  </view>
 </view>
