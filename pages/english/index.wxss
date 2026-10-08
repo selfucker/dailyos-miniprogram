@@ -63,3 +63,19 @@
   color: var(--color-muted);
   line-height: 1.6;
 }
+
+/* 分享按钮：描边款，和实心的主按钮区分开 */
+.share-btn {
+  margin-top: 20rpx;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2rpx solid var(--color-brand);
+  border-radius: var(--radius-pill);
+  color: var(--color-brand);
+  background-color: transparent;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+.share-btn-hover { background-color: var(--color-brand-soft); }

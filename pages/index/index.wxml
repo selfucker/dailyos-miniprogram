@@ -5,8 +5,8 @@
 
   <!-- 顶部 Hero -->
   <view class="hero">
-    <view class="hero-title title-serif">{{ greeting }}，Jesse</view>
-    <view class="hero-sub">今日完成 4 / 6 件事</view>
+    <view class="hero-title title-serif">{{ greeting }}，{{ nickname }}</view>
+    <view class="hero-sub">今日完成 {{ taskDone }} / {{ taskTotal }} 件事</view>
     <view class="hero-bar">
       <progress-bar value="{{ progress }}" height="14"/>
     </view>
@@ -53,10 +53,10 @@
       <text class="muted">本月 {{ ledger.monthText }}</text>
     </view>
     <view class="recent">
-      <block wx:for="{{ ledger.recent }}" wx:key="label">
+      <block wx:for="{{ ledger.recent }}" wx:key="id">
         <view class="recent-row">
           <text class="recent-cat">{{ item.category }}</text>
-          <text class="recent-label">{{ item.label }}</text>
+          <text class="recent-label">{{ item.label || '未命名' }}</text>
           <text class="recent-amt">{{ item.amount }}</text>
         </view>
       </block>

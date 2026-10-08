@@ -1,15 +1,6 @@
 // pages/english/study/index.js
-const { getBook, getWords, dailyWordsAsync } = require('../../../utils/words.js')
-
-const STORAGE_TODAY = 'english.today.v1'
-const STORAGE_HISTORY = 'english.history.v1'
-
-function getDateKey(d) {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
+const { getBook, dailyWordsAsync } = require('../../../utils/words.js')
+const store = require('../../../utils/store.js')
 
 Page({
   data: {
@@ -29,26 +20,22 @@ Page({
   },
 
   onLoad() {
-    const self = this
-    const bookId = wx.getStorageSync('english.book.v1') || 'basic_en_a'
+    const bookId = store.getEnglishBookId()
     const book = getBook(bookId)
-
-    let stored = null
-    try { stored = wx.getStorageSync(STORAGE_TODAY) || null } catch (e) {}
-
-    const today = getDateKey(new Date())
+    const stored = store.getEnglishToday()
+    const today = store.dateKey(new Date())
 
     // 今天已有记录就恢复它（包含"已完成"的情况）：
     // 否则打卡完成后再进来会被重置成未完成，看起来像没打过卡
     if (stored && stored.date === today && stored.bookId === bookId && stored.queue && stored.queue.length) {
-      self.applyQueue(book, stored.queue, stored.current || 0, stored.known || 0, stored.unknown || 0, !!stored.done)
+      this.applyQueue(book, stored.queue, stored.current || 0, stored.known || 0, stored.unknown || 0, !!stored.done)
       return
     }
 
-    // 异步拉远端 20 词
+    // 异步拉远端 20 词（后端不可用时 words.js 内部会回落本地占位词）
     dailyWordsAsync(bookId, 20).then(words => {
       const q = (words || []).map(w => Object.assign({}, w, { status: 'new' }))
-      self.applyQueue(book, q, 0, 0, 0, false)
+      this.applyQueue(book, q, 0, 0, 0, false)
     })
   },
 
@@ -74,20 +61,9 @@ Page({
     })
   },
 
+  // 连续天数交给数据层（原来本文件自己实现了一份）
   computeStreak() {
-    let history = []
-    try { history = wx.getStorageSync(STORAGE_HISTORY) || [] } catch (e) {}
-    if (!history.length) return 0
-    let streak = 0
-    const cursor = new Date()
-    while (true) {
-      const key = getDateKey(cursor)
-      if (history.indexOf(key) >= 0) {
-        streak++
-        cursor.setDate(cursor.getDate() - 1)
-      } else break
-    }
-    return streak
+    return store.countStreak(store.getEnglishHistory())
   },
 
   onTapCard() {
@@ -147,26 +123,31 @@ Page({
   },
 
   finishSession() {
-    let history = []
-    try { history = wx.getStorageSync(STORAGE_HISTORY) || [] } catch (e) {}
-    const today = getDateKey(new Date())
-    if (history.indexOf(today) < 0) history.push(today)
-    try { wx.setStorageSync(STORAGE_HISTORY, history) } catch (e) {}
+    store.addEnglishHistoryDay()   // 把今天记进打卡历史（内部自动去重）
     this.persist()
     this.setData({ streak: this.computeStreak() })
   },
 
   persist() {
-    const payload = {
-      date: getDateKey(new Date()),
+    store.setEnglishToday({
+      date: store.dateKey(new Date()),
       bookId: this.data.bookId,
       queue: this.data.queue,
       current: this.data.current,
       known: this.data.knownCount,
       unknown: this.data.unknownCount,
       done: this.data.done
-    }
-    try { wx.setStorageSync(STORAGE_TODAY, payload) } catch (e) {}
+    })
+  },
+
+  // 分享给好友：带上今天真实的打卡结果
+  onShareAppMessage() {
+    const { bookTitle, total, knownCount, unknownCount, streak, done, displayIndex } = this.data
+    const days = streak > 0 ? `，连续 ${streak} 天` : ''
+    const title = done
+      ? `我今天背完 ${total} 个单词（认识 ${knownCount} / 不认识 ${unknownCount}）${days}`
+      : `正在背 ${bookTitle}，今日进度 ${displayIndex}/${total}${days}`
+    return { title, path: '/pages/english/index' }
   },
 
   onClose() {

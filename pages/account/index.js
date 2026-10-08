@@ -1,26 +1,10 @@
 // pages/account/index.js
 const { yuan } = require('../../utils/format.js')
-
-const STORAGE_KEY = 'account.records.v1'
+const store = require('../../utils/store.js')
 
 const TYPE_OPTIONS = ['支出', '收入']
 const CAT_EXPENSE = ['餐', '交通', '购物', '居家', '医疗', '学习']
 const CAT_INCOME  = ['工资', '奖金', '转账', '理财', '其他']
-
-function todayKey(d) {
-  d = d || new Date()
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
-
-function monthKey(d) {
-  d = d || new Date()
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  return `${y}-${m}`
-}
 
 function uid() {
   return String(Date.now()) + '-' + Math.floor(Math.random() * 1e4)
@@ -37,16 +21,15 @@ function emptyDraft() {
   }
 }
 
+// 数据读写统一走 utils/store.js（key 和结构只在那一处定义）
 function loadAll() {
-  try {
-    const list = wx.getStorageSync(STORAGE_KEY)
-    return Array.isArray(list) ? list : []
-  } catch (e) { return [] }
+  return store.getRecords()
 }
 
 function saveAll(list) {
-  try { wx.setStorageSync(STORAGE_KEY, list) }
-  catch (e) { wx.showToast({ title: '保存失败', icon: 'none' }) }
+  if (!store.setRecords(list)) {
+    wx.showToast({ title: '保存失败', icon: 'none' })
+  }
 }
 
 // 把 cents(分) 渲染成 sheet 草稿的 display 字符串
@@ -76,8 +59,8 @@ Page({
 
   refresh() {
     const all = loadAll()
-    const tKey = todayKey()
-    const mKey = monthKey()
+    const tKey = store.dateKey()
+    const mKey = store.monthKey()
 
     const todayList = all
       .filter(it => it.date === tKey)
@@ -258,7 +241,7 @@ Page({
       all.push({
         id: uid(),
         ts: Date.now(),
-        date: todayKey(),
+        date: store.dateKey(),
         type: d.type,
         category: d.category,
         label,

@@ -1,9 +1,9 @@
 <view class="page">
   <view class="profile">
-    <view class="avatar title-serif">JC</view>
+    <view class="avatar title-serif">{{ avatarText }}</view>
     <view class="info">
       <view class="name title-serif">{{ nickname }}</view>
-      <view class="meta">连续 {{ streak }} 天 · 等级 Lv.{{ level }}</view>
+      <view class="meta">连续 {{ streak }} 天 · 累计 {{ totalDays }} 天</view>
     </view>
   </view>
 
@@ -13,8 +13,8 @@
       <view class="stat-label">英语天数</view>
     </view>
     <view class="stat">
-      <view class="stat-num title-serif">{{ workoutTimes }}</view>
-      <view class="stat-label">健身次数</view>
+      <view class="stat-num title-serif">{{ monthCount }}</view>
+      <view class="stat-label">本月笔数</view>
     </view>
     <view class="stat">
       <view class="stat-num title-serif">{{ monthTotal }}</view>

@@ -1,5 +1,6 @@
 // pages/fitness/index.js
 const { dateWithSuffix } = require('../../utils/date.js')
+const store = require('../../utils/store.js')
 
 // 简易消耗估算：轻度 7 kcal/分钟，适中 10，高强度 13
 function burnFor(intensity, durationMin) {
@@ -38,21 +39,12 @@ function fmtDelta(d, unit) {
   return `${d < 0 ? '↓' : '↑'} ${Math.abs(d).toFixed(1)}${unit ? ' ' + unit : ''}`
 }
 
-function getDateKey(d) {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
-
 // 输入清洗：只保留数字 + 单个小数点
 function cleanNum(v) {
   const s = String(v == null ? '' : v).replace(/[^\d.]/g, '')
   const parts = s.split('.')
   return parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : s
 }
-
-const STORAGE_KEY = 'fitness.today.v1'
 
 Page({
   data: {
@@ -101,9 +93,9 @@ Page({
   },
 
   onLoad() {
-    let stored = null
-    try { stored = wx.getStorageSync(STORAGE_KEY) || null } catch (e) {}
-    if (stored && stored.date === getDateKey(new Date())) {
+    // 只恢复"今天"的记录；日期判断由数据层负责（昨日记录不会串到今天）
+    const stored = store.getFitnessToday(new Date())
+    if (stored) {
       this.setData({
         durationMin: stored.durationMin || this.data.durationMin,
         parts: stored.parts || this.data.parts,
@@ -359,7 +351,7 @@ Page({
 
   persistToday() {
     const payload = {
-      date: getDateKey(new Date()),
+      date: store.dateKey(new Date()),
       durationMin: this.data.durationMin,
       parts: this.data.parts,
       intensity: this.data.intensity,
@@ -375,9 +367,7 @@ Page({
       weekMinutes: this.data.weekMinutes,
       ts: Date.now()
     }
-    try {
-      wx.setStorageSync(STORAGE_KEY, payload)
-    } catch (e) {
+    if (!store.setFitnessToday(payload)) {
       wx.showToast({ title: '保存失败', icon: 'none' })
     }
   },

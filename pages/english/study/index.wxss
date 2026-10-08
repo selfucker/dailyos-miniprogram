@@ -112,3 +112,19 @@
 
 .done-streak { margin-top: 32rpx; font-size: 28rpx; color: var(--color-ink); }
 .done-actions { margin-top: 56rpx; display: flex; gap: 16rpx; }
+
+/* 分享按钮：描边款 */
+.share-done {
+  margin-top: 20rpx;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2rpx solid var(--color-brand);
+  border-radius: 48rpx;
+  color: var(--color-brand);
+  background-color: transparent;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+.share-done-hover { background-color: var(--color-brand-soft); }

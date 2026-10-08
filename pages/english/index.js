@@ -1,17 +1,7 @@
 // pages/english/index.js
 const { dateWithSuffix } = require('../../utils/date.js')
-const { listBooks, getBook, listBooksAsync } = require('../../utils/words.js')
-
-const STORAGE_BOOK = 'english.book.v1'
-const STORAGE_TODAY = 'english.today.v1'
-const STORAGE_HISTORY = 'english.history.v1'
-
-function getDateKey(d) {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
+const { listBooks, listBooksAsync } = require('../../utils/words.js')
+const store = require('../../utils/store.js')
 
 Page({
   data: {
@@ -46,87 +36,64 @@ Page({
     })
   },
 
+  // 今日进度 / 连续天数 / 第几天，全部由数据层计算（和首页共用同一套逻辑，避免两处数字不一致）
   refresh() {
     const books = this.data.books && this.data.books.length ? this.data.books : listBooks()
-    const bookId = wx.getStorageSync(STORAGE_BOOK) || 'basic_en_a'
-    const book = getBook(bookId)
-    const { done, target } = this.todayState(bookId)
-    const streak = this.computeStreak()
-
-    let ctaText = '开始今日打卡'
-    if (done >= target) ctaText = '再来一组'
-    else if (done > 0) ctaText = '继续打卡'
+    const s = store.getEnglishSummary(new Date())
+    const ctaText = s.finished ? '再来一组' : (s.done > 0 ? '继续打卡' : '开始今日打卡')
 
     this.setData({
       dateLabel: dateWithSuffix(new Date()),
       books,
-      bookId,
-      bookTitle: book.title,
-      dayIndex: this.computeDayIndex(),
-      streak,
-      done,
-      target,
-      progress: target ? Math.round(done / target * 100) : 0,
+      bookId: s.bookId,
+      bookTitle: s.bookTitle,
+      dayIndex: s.dayIndex,
+      streak: s.streak,
+      done: s.done,
+      target: s.target,
+      progress: s.progress,
       ctaText
     })
-  },
-
-  todayState(bookId) {
-    let stored = null
-    try { stored = wx.getStorageSync(STORAGE_TODAY) || null } catch (e) {}
-    const today = getDateKey(new Date())
-    if (stored && stored.date === today && stored.bookId === bookId && stored.queue && stored.queue.length) {
-      const done = stored.done ? stored.queue.length : (stored.current || 0)
-      return { done, target: stored.queue.length }
-    }
-    // 还没开始：目标数用词书实际词数，避免首页显示 0/20 但实际只有 10 个词
-    const b = getBook(bookId)
-    return { done: 0, target: (b && b.totalWords) || 20 }
-  },
-
-  computeStreak() {
-    let history = []
-    try { history = wx.getStorageSync(STORAGE_HISTORY) || [] } catch (e) {}
-    if (!history.length) return 0
-    let streak = 0
-    const cursor = new Date()
-    while (true) {
-      const key = getDateKey(cursor)
-      if (history.indexOf(key) >= 0) {
-        streak++
-        cursor.setDate(cursor.getDate() - 1)
-      } else break
-    }
-    return streak
-  },
-
-  // "第几天" = 已打卡天数（没有记录时算第 1 天）
-  computeDayIndex() {
-    let history = []
-    try { history = wx.getStorageSync(STORAGE_HISTORY) || [] } catch (e) {}
-    return history.length || 1
   },
 
   onSelectBook(e) {
     const id = e.currentTarget.dataset.id
     if (!id || id === this.data.bookId) return
-    try { wx.setStorageSync(STORAGE_BOOK, id) } catch (e) {}
-    const book = getBook(id)
-    const { done, target } = this.todayState(id)
-    let ctaText = '开始今日打卡'
-    if (done >= target) ctaText = '再来一组'
-    else if (done > 0) ctaText = '继续打卡'
-    this.setData({
-      bookId: id,
-      bookTitle: book.title,
-      done,
-      target,
-      progress: target ? Math.round(done / target * 100) : 0,
-      ctaText
-    })
+    store.setEnglishBookId(id)
+    this.refresh()
   },
 
   onTapStart() {
     wx.navigateTo({ url: '/pages/english/study/index' })
+  },
+
+  // —— 分享 ——
+  // 右上角「···」转发、以及页面上 open-type="share" 的按钮，都会走到这里
+  onShareAppMessage() {
+    return {
+      title: this.buildShareTitle(),
+      path: '/pages/english/index'
+    }
+  },
+
+  // 分享到朋友圈（定义了它，菜单里才会出现"分享到朋友圈"这一项）
+  onShareTimeline() {
+    return {
+      title: this.buildShareTitle(),
+      query: ''
+    }
+  },
+
+  // 分享卡片标题：按今天的真实进度生成
+  buildShareTitle() {
+    const { bookTitle, done, target, streak } = this.data
+    const days = streak > 0 ? `，连续 ${streak} 天` : ''
+    if (target > 0 && done >= target) {
+      return `今天背完 ${target} 个单词 ✅ ${bookTitle}${days}，一起来练英语`
+    }
+    if (done > 0) {
+      return `今日英语打卡 ${done}/${target}${days}，一起来背单词吧`
+    }
+    return `今天要背《${bookTitle}》${target} 个词，一起来打卡吗？`
   }
 })

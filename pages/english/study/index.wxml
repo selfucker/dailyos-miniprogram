@@ -46,6 +46,7 @@
       <view class="btn ghost" bindtap="onClose">返回主页</view>
       <view class="btn brand" bindtap="onAgain">再来一组</view>
     </view>
+    <button class="share-done" open-type="share" hover-class="share-done-hover">分享今日打卡给好友</button>
   </view>
 
   <view wx:if="{{ !done }}" class="actions">

@@ -27,6 +27,8 @@
 
   <view class="cta-wrap">
     <view class="cta-btn" bindtap="onTapStart">{{ ctaText }}</view>
+    <!-- open-type="share" 触发本页 onShareAppMessage，把今天的打卡计划转发给好友 -->
+    <button class="share-btn" open-type="share" hover-class="share-btn-hover">分享今日打卡给好友</button>
   </view>
 
   <view class="hint-line">
